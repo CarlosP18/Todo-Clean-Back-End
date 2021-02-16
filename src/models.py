@@ -81,7 +81,7 @@ class Trabajador(db.Model):
     is_active = db.Column(db.Boolean, nullable=True, default=False)
     fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
     pedidos = db.relationship('Pedido', backref='trabajador')
-    documentos = db.relationship('DocumentoTrabajador', backref='trabajador')
+    documentos = db.relationship('DocumentoTrabajador', backref='trabajador', cascade="all,delete")
     
 
     #def __repr__(self):
@@ -218,11 +218,21 @@ class Pedido(db.Model):
 class DocumentoTrabajador (db.Model):
     __tablename__ = 'documentos'
     trabajador_id = db.Column(db.Integer, db.ForeignKey('trabajadores.id', ondelete='CASCADE'), nullable=False, primary_key=True)
-    cert_antecedentes = db.Column(db.String(15), unique=True, nullable=False)
-    foto_cedula = db.Column(db.String(15), unique=True, nullable=False)
-    cert_domicilio = db.Column(db.String(15), unique=True, nullable=False)
-    cert_prevision = db.Column(db.String(15), unique=True, nullable=False)
-    cert_cotizacion = db.Column(db.String(15), unique=True, nullable=False)
-    dias_preferencia = db.Column(db.String(15), unique=True, nullable=False)
-    horarios_preferencia = db.Column(db.String(15), unique=True, nullable=False)
+    cert_antecedentes = db.Column(db.String(100), nullable=False)
+    foto_cedula = db.Column(db.String(100), nullable=False)
+    cert_domicilio = db.Column(db.String(100), nullable=False)
+    cert_prevision = db.Column(db.String(100), nullable=False)
+    cert_cotizacion = db.Column(db.String(100), nullable=False)
+    
+        def serialize(self):
+        return {
+            "trabajador_id": self.trabajador_id,
+            "data": self.data,
+            "cert_antecedentes": self.cert_antecedentes,
+            "foto_cedula": self.foto_cedula,
+            "cert_domicilio": self.cert_domicilio,
+            "cert_prevision": self.cert_prevision,
+            "cert_cotizacion": self.cert_cotizacion
+        }
+    
     
