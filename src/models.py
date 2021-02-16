@@ -1,39 +1,62 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
+
+class Rol(db.Model):
+    __tablename__= 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    rol = db.Column(db.String(120), nullable=False)
+    user = db.relationship('User', backref='rol')
+    trabajador = db.relationship('Trabajador', backref='rol')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "rol": self.rol,
+            "user": self.user,
+            "trabajador": self.trabajador
+        }
 
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    rol_id = db.Column(db.Integer, db.ForeignKey('roles.id', ondelete='CASCADE'), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    rut = db.Column(db.String(15), unique=True, nullable=False, default="")
-    name = db.Column(db.String(120), unique=False, nullable=False)
-    last_name = db.Column(db.String(120), unique=False, nullable=False)
-    address = db.Column(db.String(180), unique=False, nullable=False, default="")
+    rut = db.Column(db.String(15), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    last_name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(180), nullable=False, default="")
     phone = db.Column(db.String(15), unique=True, nullable=True)
-    birth_date = db.Column(db.String(15), unique=False, nullable=False, default="")
-    gender = db.Column(db.String(10), unique=False, nullable=False, default="")
-    password = db.Column(db.String(80), unique=False, nullable=False)
-    status = db.Column(db.Boolean(), unique=False, nullable=True )
-    
+    birth_date = db.Column(db.DateTime, nullable=True)
+    gender = db.Column(db.String(10), nullable=False, default="")
+    password = db.Column(db.String(80), nullable=False)
+    is_active = db.Column(db.Boolean, nullable=True, default=False)
+    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
+    membership = db.Column(db.Boolean, nullable=True, default=False)
+    pedidos = db.relationship('Pedido', backref='user')
+    membresia = db.relationship('Membresia', backref='user')
 
     #def __repr__(self):
-    #   return '<User %r>' % self.username
-    
+    #    return '<User %r>' % self.username
+
     def serialize(self):
         return {
             "id": self.id,
             "email": self.email,
+            "rut" : self.rut,
             "name": self.name,
             "last_name" : self.last_name,
             "address": self.address,
             "phone" : self.phone,
             "birth_date" : self.birth_date,
             "gender" : self.gender,
-            "status" : self.status,
-            "rut" : self.rut
-            
-            # do not serialize the password, its a security breach
+            "is_active" : self.is_active,
+            "fecha_registro": self.fecha_registro,
+            "membership": self.membership,
+            "pedidos": self.pedidos,
+            "suscripcion": self.suscripcion,
+            "rol_id": self.rol_id
         }
     
     def save(self):
@@ -44,17 +67,21 @@ class User(db.Model):
 
 class Trabajador(db.Model):
     __tablename__ = 'trabajadores'
-    tra_id = db.Column(db.Integer, primary_key=True)
-    tra_email = db.Column(db.String(120), unique=True, nullable=False)
-    tra_rut = db.Column(db.String(15), unique=True, nullable=False, default="")
-    tra_name = db.Column(db.String(120), unique=False, nullable=False)
-    tra_last_name = db.Column(db.String(120), unique=False, nullable=False)
-    tra_address = db.Column(db.String(180), unique=False, nullable=False, default="")
-    tra_phone = db.Column(db.String(15), unique=True, nullable=True)
-    tra_birth_date = db.Column(db.String(15), unique=False, nullable=False, default="")
-    tra_gender = db.Column(db.String(10), unique=False, nullable=False, default="")
-    tra_password = db.Column(db.String(80), unique=False, nullable=False)
-    tra_status = db.Column(db.Boolean, nullable=True, default=False)
+    id = db.Column(db.Integer, primary_key=True)
+    rol_id = db.Column(db.Integer, db.ForeignKey('roles.id', ondelete='CASCADE'), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    rut = db.Column(db.String(15), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    last_name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(180), nullable=False, default="")
+    phone = db.Column(db.String(15), unique=True, nullable=True)
+    birth_date = db.Column(db.DateTime, nullable=True)
+    gender = db.Column(db.String(10), nullable=False, default="")
+    password = db.Column(db.String(80))
+    is_active = db.Column(db.Boolean, nullable=True, default=False)
+    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
+    pedidos = db.relationship('Pedido', backref='trabajador')
+    documentos = db.relationship('DocumentoTrabajador', backref='trabajador')
     
 
     #def __repr__(self):
@@ -62,55 +89,140 @@ class Trabajador(db.Model):
 
     def serialize(self):
         return {
-            "tra_id": self.tra_id,
-            "tra_email": self.tra_email,
-            "tra_name": self.tra_name,
-            "tra_last_name" : self.tra_last_name,
-            "tra_address": self.tra_address,
-            "tra_phone" : self.tra_phone,
-            "tra_birth_date" : self.tra_birth_date,
-            "tra_gender" : self.tra_gender,
-            "tra_status" : self.tra_status
-            # do not serialize the password, its a security breach
+            "id": self.id,
+            "email": self.email,
+            "rut": self.rut,
+            "name": self.name,
+            "last_name" : self.last_name,
+            "address": self.address,
+            "phone" : self.phone,
+            "birth_date" : self.birth_date,
+            "gender" : self.gender,
+            "is_active" : self.is_active,
+            "fecha_registro": self.fecha_registro,
+            "pedidos": self.pedidos,
+            "rol_id": self.rol_id,
+            "documentos": self.documentos
         }
     
     def save(self):
         db.session.add(self)
         db.session.commit()
 
-class Servicios(db.Model):
+
+class Servicio(db.Model):
     __tablename__ = 'servicios'
-    serv_id = db.Column(db.Integer, primary_key=True)
-    serv_nombre = db.Column(db.String(120), unique=False, nullable=False)
-    serv_detalle = db.Column(db.String(120), unique=False, nullable=False)
-    serv_precio = db.Column(db.String(120), unique=False, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(120), unique=False, nullable=False)
+    detalle = db.Column(db.String(120), unique=False, nullable=False)
+    precio = db.Column(db.Integer, unique=False, nullable=False)
+    pedidos = db.relationship('Pedido', backref='servicio')
 
     def serialize(self):
         return {
-            "serv_id": self.serv_id,
-            "serv_nombre": self.serv_nombre,
-            "serv_detalle": self.serv_detalle,
-            "serv_precio": self.serv_precio,
+            "id": self.id,
+            "nombre": self.nombre,
+            "detalle": self.detalle,
+            "precio": self.precio,
+            "pedidos": self.pedidos
+        }
+
+class Membresia(db.Model):
+    __tablename__ = 'membresias'
+    id = db.Column(db.Integer, primary_key=True)
+    plan_id = db.Column(db.Integer, db.ForeignKey('planes.id', ondelete='CASCADE'), nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    fecha_compra = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "plan_id": self.plan_id,
+            "users_id": self.users_id,
+            "fecha_compra": self.fecha_compra,
+        }
+    
+class Plan(db.Model):
+    __tablename__ = 'planes'
+    id = db.Column(db.Integer, primary_key=True)
+    tipo = db.Column(db.String(15), unique=False, nullable=True)
+    detalle = db.Column(db.String(120), unique=False, nullable=True)
+    precio = db.Column(db.Integer, unique=False)
+    membresia = db.relationship('Membresia', backref='plan')
+    def serialize(self):
+        return {
+            "id": self.id,
+            "tipo": self.tipo,
+            "detalle": self.detalle,
+            "precio": self.precio,
+            "membresia": self.membresia
         }
 
 class TipoVivienda(db.Model):
-    __tablename__ = 'tipovivienda'
-    vivienda_id= db.Column(db.Integer, primary_key=True)
-    vivienda_tipo = db.Column(db.String(120), unique=False, nullable=False)
+    __tablename__ = 'tipoviviendas'
+    id= db.Column(db.Integer, primary_key=True)
+    tipo = db.Column(db.String(15), unique=False, nullable=False)
+    pedidos = db.relationship('Pedido', backref='tipovivienda')
 
     def serialize(self):
         return {
-            "vivienda_id": self.vivienda_id,
-            "vivienda_tipo": self.vivienda_tipo,
+            "id": self.id,
+            "tipo": self.tipo,
+            "pedidos": self.pedidos
         }
 
-class Comunas(db.Model):
+
+class Comuna(db.Model):
     __tablename__ = 'comunas'
-    comuna_id= db.Column(db.Integer, primary_key=True)
-    comuna_nombre = db.Column(db.String(30), unique=False, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(30), unique=False, nullable=False)
+    pedidos = db.relationship('Pedido', backref='comuna')
 
     def serialize(self):
         return {
-            "comuna_id": self. comuna_id,
-            "comuna_nombre": self.comuna_nombre,
+            "id": self.id,
+            "nombre": self.nombre,
+            "pedidos": self.pedidos
         }
+
+class Pedido(db.Model):
+    __tablename__ = 'pedidos'
+    id = db.Column(db.Integer, primary_key=True)
+    fecha_pedido = db.Column(db.DateTime, default=db.func.current_timestamp())
+    users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    trabajador_id = db.Column(db.Integer, db.ForeignKey('trabajadores.id', ondelete='CASCADE'), nullable=False)
+    servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
+    vivienda_id = db.Column(db.Integer, db.ForeignKey('tipoviviendas.id', ondelete='CASCADE'), nullable=False)
+    habitacion_adicional = db.Column(db.Integer, unique=False, nullable=True)
+    banio_adicional = db.Column(db.Integer, unique=False, nullable=True)
+    #serv_adicional = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
+    valor = db.Column(db.Integer, unique=False, nullable=False)
+    id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=False)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "fecha_pedido": self.fecha_pedido,
+            "users_id": self.users_id,
+            "trabajador_id": self.trabajador_id,
+            "servicio_id": self.servicio_id,
+            "vivienda_id": self.vivienda_id,
+            "habitacion_adicional": self.habitacion_adicional,
+            "banio_adicional": self.banio_adicional,
+            "serv_adicional": self.serv_adicional,
+            "valor": self.valor,
+            "id_comuna": self.id_comuna,
+
+        }
+
+class DocumentoTrabajador (db.Model):
+    __tablename__ = 'documentos'
+    trabajador_id = db.Column(db.Integer, db.ForeignKey('trabajadores.id', ondelete='CASCADE'), nullable=False, primary_key=True)
+    cert_antecedentes = db.Column(db.String(15), unique=True, nullable=False)
+    foto_cedula = db.Column(db.String(15), unique=True, nullable=False)
+    cert_domicilio = db.Column(db.String(15), unique=True, nullable=False)
+    cert_prevision = db.Column(db.String(15), unique=True, nullable=False)
+    cert_cotizacion = db.Column(db.String(15), unique=True, nullable=False)
+    dias_preferencia = db.Column(db.String(15), unique=True, nullable=False)
+    horarios_preferencia = db.Column(db.String(15), unique=True, nullable=False)
+    

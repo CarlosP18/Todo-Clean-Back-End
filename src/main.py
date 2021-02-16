@@ -42,21 +42,20 @@ def handle_hello():
 
 @app.route('/user/signup', methods=['POST'])
 def create_user():
-    id = request.json.get('id')
+    
     email = request.json.get('email')
     rut = request.json.get('rut')
     name = request.json.get('name')
     last_name = request.json.get('last_name')
     address = request.json.get('address')
+    phone = request.json.get('phone')
     birth_date = request.json.get('birth_date')
     gender = request.json.get('gender')
     password = request.json.get('password')
-    status = request.json.get('status')
-    phone = request.json.get('phone')
-
-    user = User()
+    is_active = request.json.get('is_active')
     
-    user.id = id
+    user = User()
+
     user.email = email
     user.rut = rut
     user.name = name
@@ -65,18 +64,18 @@ def create_user():
     user.birth_date = birth_date
     user.gender = gender
     user.password = password
-    user.status = status
+    user.is_active = is_active
     user.phone = phone
 
     user.save()
-    print(user)
+
 
     return jsonify({"msg":"usuario creado"}), 200
 
 
 @app.route('/new/trabajaconnosotros', methods=['POST'])
 def create_trabajador():
-    id = request.json.get('id')
+    
     email = request.json.get('email')
     rut = request.json.get('rut')
     name = request.json.get('name')
@@ -85,21 +84,21 @@ def create_trabajador():
     birth_date = request.json.get('birth_date')
     gender = request.json.get('gender')
     password = request.json.get('password')
-    status = request.json.get('status')
+    is_active = request.json.get('is_active')
     phone = request.json.get('phone')
 
     trabajador = Trabajador()
-    trabajador.tra_id = id
-    trabajador.tra_email = email
-    trabajador.tra_rut = rut
-    trabajador.tra_name = name
-    trabajador.tra_last_name = last_name
-    trabajador.tra_address = address
-    trabajador.tra_birth_date = birth_date
-    trabajador.tra_gender = gender
-    trabajador.tra_password = password
-    trabajador.tra_status = status
-    trabajador.tra_phone = phone
+    
+    trabajador.email = email
+    trabajador.rut = rut
+    trabajador.name = name
+    trabajador.last_name = last_name
+    trabajador.address = address
+    trabajador.birth_date = birth_date
+    trabajador.gender = gender
+    trabajador.password = password
+    trabajador.is_active = is_active
+    trabajador.phone = phone
 
     trabajador.save()
 
