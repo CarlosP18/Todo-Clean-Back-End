@@ -14,7 +14,7 @@ from models import db, User, Trabajador
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -48,15 +48,14 @@ def create_user():
     name = request.json.get('name')
     last_name = request.json.get('last_name')
     address = request.json.get('address')
+    phone = request.json.get('phone')
     birth_date = request.json.get('birth_date')
     gender = request.json.get('gender')
     password = request.json.get('password')
-    status = request.json.get('status')
-    phone = request.json.get('phone')
-
+    is_active = request.json.get('is_active')
+    
     user = User()
-    
-    
+
     user.email = email
     user.rut = rut
     user.name = name
@@ -65,7 +64,7 @@ def create_user():
     user.birth_date = birth_date
     user.gender = gender
     user.password = password
-    user.status = status
+    user.is_active = is_active
     user.phone = phone
 
     user.save()
@@ -85,7 +84,7 @@ def create_trabajador():
     birth_date = request.json.get('birth_date')
     gender = request.json.get('gender')
     password = request.json.get('password')
-    status = request.json.get('status')
+    is_active = request.json.get('is_active')
     phone = request.json.get('phone')
 
     trabajador = Trabajador()
@@ -98,7 +97,7 @@ def create_trabajador():
     trabajador.birth_date = birth_date
     trabajador.gender = gender
     trabajador.password = password
-    trabajador.status = status
+    trabajador.is_active = is_active
     trabajador.phone = phone
 
     trabajador.save()
