@@ -36,7 +36,6 @@ class User(db.Model):
     membership = db.Column(db.Boolean, nullable=True, default=False)
     pedidos = db.relationship('Pedido', backref='user')
     membresia = db.relationship('Membresia', backref='user')
-
     #def __repr__(self):
     #    return '<User %r>' % self.username
 
@@ -55,15 +54,12 @@ class User(db.Model):
             "fecha_registro": self.fecha_registro,
             "membership": self.membership,
             "pedidos": self.pedidos,
-            "suscripcion": self.suscripcion,
             "rol_id": self.rol_id
         }
     
     def save(self):
         db.session.add(self)
         db.session.commit()
-
-
 
 class Trabajador(db.Model):
     __tablename__ = 'trabajadores'
@@ -82,8 +78,6 @@ class Trabajador(db.Model):
     fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
     pedidos = db.relationship('Pedido', backref='trabajador')
     documentos = db.relationship('DocumentoTrabajador', backref='trabajador', cascade="all,delete")
-    
-
     #def __repr__(self):
     #    return '<Trabajador %r>' % self.username
 
@@ -158,19 +152,18 @@ class Plan(db.Model):
             "membresia": self.membresia
         }
 
-class TipoVivienda(db.Model):
-    __tablename__ = 'tipoviviendas'
-    id= db.Column(db.Integer, primary_key=True)
-    tipo = db.Column(db.String(15), unique=False, nullable=False)
-    pedidos = db.relationship('Pedido', backref='tipovivienda')
+#class TipoVivienda(db.Model):
+#    __tablename__ = 'tipoviviendas'
+#    id= db.Column(db.Integer, primary_key=True)
+#    tipo = db.Column(db.String(15), unique=False, nullable=False)
+#    pedidos = db.relationship('Pedido', backref='tipovivienda')
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "tipo": self.tipo,
-            "pedidos": self.pedidos
-        }
-
+#    def serialize(self):
+#        return {
+#            "id": self.id,
+#            "tipo": self.tipo,
+#            "pedidos": self.pedidos
+#        }
 
 class Comuna(db.Model):
     __tablename__ = 'comunas'
@@ -192,13 +185,12 @@ class Pedido(db.Model):
     users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     trabajador_id = db.Column(db.Integer, db.ForeignKey('trabajadores.id', ondelete='CASCADE'), nullable=False)
     servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
-    vivienda_id = db.Column(db.Integer, db.ForeignKey('tipoviviendas.id', ondelete='CASCADE'), nullable=False)
     habitacion_adicional = db.Column(db.Integer, unique=False, nullable=True)
-    banio_adicional = db.Column(db.Integer, unique=False, nullable=True)
-    #serv_adicional = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
+    banio_adicional = db.Column(db.Integer, unique=False, nullable=True) 
     valor = db.Column(db.Integer, unique=False, nullable=False)
     id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=False)
-
+    #vivienda_id = db.Column(db.Integer, db.ForeignKey('tipoviviendas.id', ondelete='CASCADE'), nullable=False)
+    #serv_adicional = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
     def serialize(self):
         return {
             "id": self.id,
@@ -206,7 +198,6 @@ class Pedido(db.Model):
             "users_id": self.users_id,
             "trabajador_id": self.trabajador_id,
             "servicio_id": self.servicio_id,
-            "vivienda_id": self.vivienda_id,
             "habitacion_adicional": self.habitacion_adicional,
             "banio_adicional": self.banio_adicional,
             "serv_adicional": self.serv_adicional,
@@ -224,7 +215,7 @@ class DocumentoTrabajador (db.Model):
     cert_prevision = db.Column(db.String(100), nullable=False)
     cert_cotizacion = db.Column(db.String(100), nullable=False)
     
-        def serialize(self):
+    def serialize(self):
         return {
             "trabajador_id": self.trabajador_id,
             "data": self.data,
@@ -234,5 +225,4 @@ class DocumentoTrabajador (db.Model):
             "cert_prevision": self.cert_prevision,
             "cert_cotizacion": self.cert_cotizacion
         }
-    
-    
+        
