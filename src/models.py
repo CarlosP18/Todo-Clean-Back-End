@@ -56,7 +56,7 @@ class User(db.Model):
             "pedidos": self.pedidos,
             "rol_id": self.rol_id
         }
-    
+        
     def save(self):
         db.session.add(self)
         db.session.commit()
@@ -73,7 +73,7 @@ class Trabajador(db.Model):
     phone = db.Column(db.String(15), unique=True, nullable=True)
     birth_date = db.Column(db.DateTime, nullable=True)
     gender = db.Column(db.String(10), nullable=False, default="")
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(1000))
     is_active = db.Column(db.Boolean, nullable=True, default=False)
     fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
     pedidos = db.relationship('Pedido', backref='trabajador')

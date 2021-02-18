@@ -22,11 +22,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-<<<<<<< HEAD
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:vannia123@localhost:3306/proyecto_final'
-=======
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final'
->>>>>>> bff16d820db0a45c8ae0902746c06bab2fa835a7
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -48,16 +44,18 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/clientes', methods=['GET'])
+@jwt_required()
 def vista_usersall():
     users = User.query.all()
     users = list(map(lambda user: user.serialize(), users))
     return jsonify(users),200
 
 @app.route('/cliente/<email>', methods=['GET'])
+@jwt_required()
 def vista_cliente(email=None):
     if email is not None:
         user = User.query.filter_by(email=email).first()
-        if not user: return jsonify({"msg":"no existe el usuario"}), 404
+        if not user: return jsonify({"message":"no existe el usuario"}), 404
         return jsonify (user.serialize()), 200
    
         
@@ -90,9 +88,26 @@ def create_user():
             "user": user.serialize()
         }
         return jsonify(data), 200
-
     else:
-        return jsonify({"msg":"Registration failed"}), 400
+        return jsonify({"message":"Registration failed"}), 400
+
+@app.route('/user/signin', methods=['POST'])
+def login_user():
+    email = request.json.get('email')
+    password = request.json.get('password')
+    user = User.query.filter_by(email=email).first()
+    if user:
+        if check_password_hash(user.password, password):
+            access_token = create_access_token(identity=user.id)
+            data = {
+                "access_token": access_token,
+                "user": user.serialize()
+            }
+            return jsonify(data), 200
+        else:
+            return jsonify({"message":"Usuario o contraseña invalida"}), 400
+    else:
+        return jsonify({"message":"Usuario o contraseña invalida"}), 400
 
 @app.route('/new/trabajaconnosotros', methods=['POST'])
 def create_trabajador():
@@ -111,11 +126,11 @@ def create_trabajador():
     trabajador.last_name = last_name
     trabajador.address = address
     trabajador.phone = phone
-    trabajador.password = password
+    trabajador.password = generate_password_hash(password)
     trabajador.rol_id = 2
     
     trabajador.save()
-    return jsonify({"msg":"trabajador creado, bienvenido/a"}), 200
+    return jsonify({"message":"trabajador creado, bienvenido/a"}), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
