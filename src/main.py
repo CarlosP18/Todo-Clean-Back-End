@@ -2,8 +2,10 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
@@ -20,11 +22,13 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
+app.config['JWT_SECRET_KEY'] = 'super-secret'
 MIGRATE = Migrate(app, db)
 db.init_app(app)
+jwt = JWTManager(app)
 CORS(app)
 setup_admin(app)
 
@@ -59,7 +63,7 @@ def create_user():
     rut = request.json.get('rut')
     name = request.json.get('name')
     last_name = request.json.get('last_name')
-    address = request.json.get('address')
+    
     phone = request.json.get('phone')
     password = request.json.get('password')
  
@@ -68,13 +72,23 @@ def create_user():
     user.rut = rut
     user.name = name
     user.last_name = last_name
-    user.address = address
+    
     user.phone = phone
-    user.password = password
+    user.password = generate_password_hash(password)
     user.rol_id = 1
 
     user.save()
-    return jsonify({"msg":"usuario creado"}), 200
+
+    if user:
+        access_token = create_access_token(identity=user.id)
+        data = {
+            "access_token": access_token,
+            "user": user.serialize()
+        }
+        return jsonify(data), 200
+
+    else:
+        return jsonify({"msg":"Registration failed"}), 400
 
 @app.route('/new/trabajaconnosotros', methods=['POST'])
 def create_trabajador():
