@@ -28,7 +28,6 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -51,8 +50,7 @@ def vista_cliente(email=None):
         user = User.query.filter_by(email=email).first()
         if not user: return jsonify({"msg":"no existe el usuario"}), 404
         return jsonify (user.serialize()), 200
-   
-        
+           
 @app.route('/user/signup', methods=['POST'])
 def create_user():
     email = request.json.get('email')
