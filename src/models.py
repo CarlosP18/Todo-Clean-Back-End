@@ -30,9 +30,9 @@ class User(db.Model):
     gender = db.Column(db.String(10), nullable=False, default="")
     password = db.Column(db.String(1000), nullable=False)
     is_active = db.Column(db.Boolean, nullable=True, default=False)
-    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
-    cliente_pedidos = db.relationship('Pedido', backref='user')
-    trab_pedidos = db.relationship('Pedido', backref='trabajador')
+    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())     
+    cliente_pedidos = db.relationship("Pedido", primaryjoin="and_(User.id==Pedido.users_id)")
+    trab_pedidos = db.relationship("Pedido", primaryjoin="and_(User.id==Pedido.trab_id)")     
     membresia = db.relationship('Membresia', backref='user')
     documentos = db.relationship('DocumentoTrabajador', backref='user', cascade="all,delete")
     #def __repr__(self):
@@ -111,8 +111,8 @@ class Pedido(db.Model):
     __tablename__ = 'pedidos'
     id = db.Column(db.Integer, primary_key=True)
     fecha_pedido = db.Column(db.DateTime, default=db.func.current_timestamp())
-    users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    trab_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
+    trab_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
     servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
     valor = db.Column(db.Integer, unique=False, nullable=False)
     id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=False)

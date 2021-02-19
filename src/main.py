@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:vannia123@localhost:3306/proyecto_final_2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -75,6 +75,7 @@ def create_user():
     
     user.phone = phone
     user.password = generate_password_hash(password)
+    # 1 = cliente
     user.rol_id = 1
     user.is_active = True
 
@@ -89,6 +90,7 @@ def create_user():
         return jsonify(data), 200
     else:
         return jsonify({"message":"Registration failed"}), 400
+
 
 @app.route('/user/signin', methods=['POST'])
 def login_user():
@@ -108,7 +110,7 @@ def login_user():
     else:
         return jsonify({"message":"Usuario o contraseña invalida"}), 400
 
-@app.route('/new/trabajaconnosotros', methods=['POST'])
+@app.route('/user/signup-trabajador', methods=['POST'])
 def create_trabajador():
     email = request.json.get('email')
     rut = request.json.get('rut')
@@ -126,6 +128,7 @@ def create_trabajador():
     
     user.phone = phone
     user.password = generate_password_hash(password)
+    # 2 = Trabajador
     user.rol_id = 2
     user.is_active = True
 
