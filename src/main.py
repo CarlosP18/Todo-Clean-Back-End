@@ -10,7 +10,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Trabajador
+from models import db, User
 from dotenv import load_dotenv
 #from trabajador import db, Trabajador
 #from models import Person
@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:vannia123@localhost:3306/proyecto_final'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -31,7 +31,6 @@ db.init_app(app)
 jwt = JWTManager(app)
 CORS(app)
 setup_admin(app)
-
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -57,8 +56,7 @@ def vista_cliente(email=None):
         user = User.query.filter_by(email=email).first()
         if not user: return jsonify({"message":"no existe el usuario"}), 404
         return jsonify (user.serialize()), 200
-   
-        
+           
 @app.route('/user/signup', methods=['POST'])
 def create_user():
     email = request.json.get('email')
@@ -77,7 +75,9 @@ def create_user():
     
     user.phone = phone
     user.password = generate_password_hash(password)
+    # 1 = cliente
     user.rol_id = 1
+    user.is_active = True
 
     user.save()
 
@@ -90,6 +90,7 @@ def create_user():
         return jsonify(data), 200
     else:
         return jsonify({"message":"Registration failed"}), 400
+
 
 @app.route('/user/signin', methods=['POST'])
 def login_user():
@@ -109,28 +110,85 @@ def login_user():
     else:
         return jsonify({"message":"Usuario o contraseña invalida"}), 400
 
-@app.route('/new/trabajaconnosotros', methods=['POST'])
+@app.route('/user/signup-trabajador', methods=['POST'])
 def create_trabajador():
     email = request.json.get('email')
     rut = request.json.get('rut')
     name = request.json.get('name')
     last_name = request.json.get('last_name')
-    address = request.json.get('address')
+    
     phone = request.json.get('phone')
     password = request.json.get('password')
+ 
+    user = User()
+    user.email = email
+    user.rut = rut
+    user.name = name
+    user.last_name = last_name
     
-    trabajador = Trabajador()
-    trabajador.email = email
-    trabajador.rut = rut
-    trabajador.name = name
-    trabajador.last_name = last_name
-    trabajador.address = address
-    trabajador.phone = phone
-    trabajador.password = generate_password_hash(password)
-    trabajador.rol_id = 2
+    user.phone = phone
+    user.password = generate_password_hash(password)
+    # 2 = Trabajador
+    user.rol_id = 2
+    user.is_active = True
+
+    user.save()
+
+    if user:
+        access_token = create_access_token(identity=user.id)
+        data = {
+            "access_token": access_token,
+            "user": user.serialize()
+        }
+        return jsonify(data), 200
+    else:
+        return jsonify({"message":"Registration failed"}), 400
+
+@app.route('/trabajador/formulario-inicio/<int:id>', methods=['PUT'])
+def formulario_tra(id=None):
+    name = request.json.get("name")
+    last_name = request.json.get("last_name")
+    phone = request.json.get("phone")
+    email = request.json.get("email")
+    birth_date = request.json.get("birth_date")
+    rut = request.json.get("rut")
+    ciudad = request.json.get("ciudad")
+    comuna = request.json.get("comuna")
+    address = request.json.get("address")
+    bank = request.json.get("bank")
+    cuenta = request.json.get("cuenta")
+    numero_cuenta = request.json.get("numero_cuenta")
     
-    trabajador.save()
-    return jsonify({"message":"trabajador creado, bienvenido/a"}), 200
+    if not name: return jsonify({"msg": "nombre es requerido"}), 400
+    if not last_name: return jsonify({"msg": "apellido es requerido"}), 400
+    if not phone: return jsonify({"msg": "telefono es requerido"}), 400
+    if not email: return jsonify({"msg": "email es requerido"}), 400
+    if not rut: return jsonify({"msg": "rut es requerido"}), 400
+    if not address: return jsonify({"msg": "direccion es requerido"}), 400
+    if not ciudad: return jsonify({"msg": "ciudad es requerido"}), 400
+    if not comuna: return jsonify({"msg": "comuna es requerido"}), 400
+    user = User.query.filter_by(email=email).first()
+    if user and user.id != id: return jsonify({"msg": "email ya existe "}), 400
+
+    user = User.query.get(id)
+    user.name = name
+    user.last_name = last_name
+    user.phone = phone
+    user.email = email
+    user.birth_date = birth_date
+    user.rut = rut
+    user.address = address
+    user.ciudad = ciudad
+    user.comuna = comuna
+    user.bank = bank
+    user.cuenta = cuenta
+    user.numero_cuenta = numero_cuenta
+    user.update()
+
+    return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
+
+
+    
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
