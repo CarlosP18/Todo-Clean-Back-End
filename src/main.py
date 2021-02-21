@@ -150,7 +150,7 @@ def formulario_tra(id=None):
     last_name = request.json.get("last_name")
     phone = request.json.get("phone")
     email = request.json.get("email")
-    birth_date = request.json.get("birth_date")
+    #birth_date = request.json.get("birth_date")
     rut = request.json.get("rut")
     ciudad = request.json.get("ciudad")
     comuna = request.json.get("comuna")
@@ -175,7 +175,7 @@ def formulario_tra(id=None):
     user.last_name = last_name
     user.phone = phone
     user.email = email
-    user.birth_date = birth_date
+    #user.birth_date = birth_date
     user.rut = rut
     user.address = address
     user.ciudad = ciudad
@@ -187,7 +187,37 @@ def formulario_tra(id=None):
 
     return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
 
+@app.route('/cliente/formulario-inicio/<int:id>', methods=['PUT'])
+def formulario_cliente(id=None):
+    name = request.json.get("name")
+    last_name = request.json.get("last_name")
+    email = request.json.get("email")
+    phone = request.json.get("phone")
+    ciudad = request.json.get("ciudad")
+    comuna = request.json.get("comuna")
+    address = request.json.get("address")
 
+    if not name: return jsonify({"msg": "nombre es requerido"}), 400
+    if not last_name: return jsonify({"msg": "apellido es requerido"}), 400
+    if not email: return jsonify({"msg": "email es requerido"}), 400
+    if not phone: return jsonify({"msg": "telefono es requerido"}), 400
+    if not ciudad: return jsonify({"msg": "ciudad es requerido"}), 400
+    if not comuna: return jsonify({"msg": "comuna es requerido"}), 400
+    if not address: return jsonify({"msg": "direccion es requerido"}), 400
+    user = User.query.filter_by(email=email).first()
+    if user and user.id != id: return jsonify({"msg": "email ya existe "}), 400
+
+    user = User.query.get(id)
+    user.name = name
+    user.last_name = last_name
+    user.email = email
+    user.phone = phone
+    user.ciudad = ciudad
+    user.comuna = comuna
+    user.address = address
+    user.update()
+
+    return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
     
 
 # this only runs if `$ python src/main.py` is executed
