@@ -24,13 +24,18 @@ class User(db.Model):
     rut = db.Column(db.String(15), unique=True, nullable=False)
     name = db.Column(db.String(120), nullable=False)
     last_name = db.Column(db.String(120), nullable=False)
+    ciudad = db.Column(db.String(180), nullable=False, default="")
+    comuna = db.Column(db.String(180), nullable=False, default="")
     address = db.Column(db.String(180), nullable=False, default="")
     phone = db.Column(db.String(15), unique=True, nullable=True)
     birth_date = db.Column(db.DateTime, nullable=True)
     gender = db.Column(db.String(10), nullable=False, default="")
     password = db.Column(db.String(1000), nullable=False)
     is_active = db.Column(db.Boolean, nullable=True, default=False)
-    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())     
+    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())  
+    bank = db.Column(db.String(180), nullable=False, default="")
+    cuenta = db.Column(db.String(180), nullable=False, default="")
+    numero_cuenta = db.Column(db.String(180), nullable=False, default="")
     cliente_pedidos = db.relationship("Pedido", primaryjoin="and_(User.id==Pedido.users_id)")
     trab_pedidos = db.relationship("Pedido", primaryjoin="and_(User.id==Pedido.trab_id)")     
     membresia = db.relationship('Membresia', backref='user')
@@ -45,12 +50,17 @@ class User(db.Model):
             "rut" : self.rut,
             "name": self.name,
             "last_name" : self.last_name,
+            "ciudad": self.ciudad,
+            "comuna": self.comuna,
             "address": self.address,
             "phone" : self.phone,
             "birth_date" : self.birth_date,
             "gender" : self.gender,
             "is_active" : self.is_active,
             "fecha_registro": self.fecha_registro,
+            "bank": self.bank,
+            "cuenta": self.cuenta,
+            "numero_cuenta": self.numero_cuenta,
             "cliente_pedidos": self.cliente_pedidos,
             "trab_pedidos": self.trab_pedidos,
             "membresia": self.membresia,
@@ -58,6 +68,9 @@ class User(db.Model):
         }      
     def save(self):
         db.session.add(self)
+        db.session.commit()
+
+    def update(self):
         db.session.commit()
 
 class Servicio(db.Model):

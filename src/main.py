@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:vannia123@localhost:3306/proyecto_final_2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -143,6 +143,52 @@ def create_trabajador():
         return jsonify(data), 200
     else:
         return jsonify({"message":"Registration failed"}), 400
+
+@app.route('/trabajador/formulario-inicio/<int:id>', methods=['PUT'])
+def formulario_tra(id=None):
+    name = request.json.get("name")
+    last_name = request.json.get("last_name")
+    phone = request.json.get("phone")
+    email = request.json.get("email")
+    birth_date = request.json.get("birth_date")
+    rut = request.json.get("rut")
+    ciudad = request.json.get("ciudad")
+    comuna = request.json.get("comuna")
+    address = request.json.get("address")
+    bank = request.json.get("bank")
+    cuenta = request.json.get("cuenta")
+    numero_cuenta = request.json.get("numero_cuenta")
+    
+    if not name: return jsonify({"msg": "nombre es requerido"}), 400
+    if not last_name: return jsonify({"msg": "apellido es requerido"}), 400
+    if not phone: return jsonify({"msg": "telefono es requerido"}), 400
+    if not email: return jsonify({"msg": "email es requerido"}), 400
+    if not rut: return jsonify({"msg": "rut es requerido"}), 400
+    if not address: return jsonify({"msg": "direccion es requerido"}), 400
+    if not ciudad: return jsonify({"msg": "ciudad es requerido"}), 400
+    if not comuna: return jsonify({"msg": "comuna es requerido"}), 400
+    user = User.query.filter_by(email=email).first()
+    if user and user.id != id: return jsonify({"msg": "email ya existe "}), 400
+
+    user = User.query.get(id)
+    user.name = name
+    user.last_name = last_name
+    user.phone = phone
+    user.email = email
+    user.birth_date = birth_date
+    user.rut = rut
+    user.address = address
+    user.ciudad = ciudad
+    user.comuna = comuna
+    user.bank = bank
+    user.cuenta = cuenta
+    user.numero_cuenta = numero_cuenta
+    user.update()
+
+    return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
+
+
+    
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
