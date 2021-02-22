@@ -1,5 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db = SQLAlchemy()
 #SACAR DE SERIALIZE PASSWORD
@@ -42,6 +47,21 @@ class User(db.Model):
     documentos = db.relationship('DocumentoTrabajador', backref='user', cascade="all,delete")
     #def __repr__(self):
     #    return '<User %r>' % self.username
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(os.getenv('SECRET_KEY'), expires_sec)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+    
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(os.getenv('SECRET_KEY'))
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
+
+
+
     def serialize(self):
         return {
             "id": self.id,
@@ -176,3 +196,4 @@ class Comuna(db.Model):
             "pedidos": self.pedidos
         }
         
+
