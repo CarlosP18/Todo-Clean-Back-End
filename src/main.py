@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, redirect, render_template, flash
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from flask_swagger import swagger
@@ -12,6 +12,8 @@ from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User
 from dotenv import load_dotenv
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 #from trabajador import db, Trabajador
 #from models import Person
 load_dotenv()
@@ -26,11 +28,21 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localho
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_USERNAME'] = 'mimarchtt@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Piwi1989'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_DEBUG'] = True
 MIGRATE = Migrate(app, db)
 db.init_app(app)
 jwt = JWTManager(app)
 CORS(app)
 setup_admin(app)
+mail = Mail(app)
+
+s = URLSafeTimedSerializer('secret-key')
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -219,6 +231,44 @@ def formulario_cliente(id=None):
 
     return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
     
+
+
+
+@app.route('/reset-password-request', methods=['POST'])
+def reset_request():
+    
+    email = request.json.get('email')
+    if not email:
+        return jsonify({"msg":"Email inválido"})
+    user = User.query.filter_by(email=email).first()
+    token = user.get_reset_token()
+    url = 'http://localhost:3000/reset-password/' + token
+    msg = Message('Recuperación de contraseña', sender='mimarchtt@gmail.com', recipients=[email])
+    msg.body = f'''Para restablecer su contraseña, haga click en el link a continuación:
+{url}
+Si usted no hizo esta solicitud, ignore este mensaje 
+'''
+    mail.send(msg)
+    flash('Un correo con instrucciones sobre cómo recuperar su contraseña ha sido enviado', 'info')
+    return redirect(url_for('login_user'))
+
+
+
+
+
+@app.route('/reset-password/<token>', methods=['GET','POST'])
+def reset_token(token):
+    password = request.json.get('password')
+    confirm_password = request.json.get('confirm_password')
+    user = User.verify_reset_token(token)
+    if not user:
+        flash('Invalid or expired token', 'warning')
+        return redirect(url_for('login_user'))
+    user.password = generate_password_hash(password)
+    db.session.commit()
+    return jsonify({"msg":"contraseña actualizada"})
+
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
