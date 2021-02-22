@@ -10,7 +10,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Pedido
 from dotenv import load_dotenv
 #from trabajador import db, Trabajador
 #from models import Person
@@ -218,6 +218,26 @@ def formulario_cliente(id=None):
     user.update()
 
     return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
+
+@app.route('/user/reserva', methods=['POST'])
+def create_reserva():
+    tipo_servicio = request.json.get('tipo_servicio')
+    num_habitaciones = request.json.get('num_habitaciones')
+    num_banios = request.json.get('num_banios')
+    fecha_parareserva = request.json.get('fecha_parareserva')
+    valor = request.json.get('valor')
+
+    pedido = Pedido()
+    pedido.tipo_servicio = tipo_servicio
+    pedido.num_habitaciones = num_habitaciones
+    pedido.num_banios = num_banios
+    pedido.fecha_parareserva = fecha_parareserva
+    pedido.valor = valor
+    pedido.save()
+
+    return jsonify({"result": "Reserva creada", "reserva": pedido.serialize()}), 201
+
+    
     
 
 # this only runs if `$ python src/main.py` is executed

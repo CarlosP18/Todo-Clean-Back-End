@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: cf8f5cf3d01c
+Revision ID: 193206b2b627
 Revises: 
-Create Date: 2021-02-21 20:12:21.173035
+Create Date: 2021-02-22 14:03:46.674210
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'cf8f5cf3d01c'
+revision = '193206b2b627'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -90,12 +90,16 @@ def upgrade():
     )
     op.create_table('pedidos',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('tipo_servicio', sa.String(length=50), nullable=False),
+    sa.Column('num_habitaciones', sa.Integer(), nullable=False),
+    sa.Column('num_banios', sa.Integer(), nullable=False),
+    sa.Column('fecha_parareserva', sa.String(length=50), nullable=False),
     sa.Column('fecha_pedido', sa.DateTime(), nullable=True),
+    sa.Column('valor', sa.Integer(), nullable=False),
     sa.Column('users_id', sa.Integer(), nullable=True),
     sa.Column('trab_id', sa.Integer(), nullable=True),
-    sa.Column('servicio_id', sa.Integer(), nullable=False),
-    sa.Column('valor', sa.Integer(), nullable=False),
-    sa.Column('id_comuna', sa.Integer(), nullable=False),
+    sa.Column('servicio_id', sa.Integer(), nullable=True),
+    sa.Column('id_comuna', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id_comuna'], ['comunas.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['servicio_id'], ['servicios.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['trab_id'], ['users.id'], ondelete='CASCADE'),

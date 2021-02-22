@@ -123,25 +123,38 @@ class Membresia(db.Model):
 class Pedido(db.Model):
     __tablename__ = 'pedidos'
     id = db.Column(db.Integer, primary_key=True)
+    tipo_servicio = db.Column(db.String(50), unique=False, nullable=False)
+    num_habitaciones = db.Column(db.Integer, unique=False, nullable=False)
+    num_banios = db.Column(db.Integer, unique=False, nullable=False)
+    fecha_parareserva = db.Column(db.String(50), unique=False, nullable=False)
     fecha_pedido = db.Column(db.DateTime, default=db.func.current_timestamp())
+    valor = db.Column(db.Integer, unique=False, nullable=True)
     users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
     trab_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
-    servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
-    valor = db.Column(db.Integer, unique=False, nullable=False)
-    id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=False)
+    servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=True)
+    id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=True)
     #vivienda_id = db.Column(db.Integer, db.ForeignKey('tipoviviendas.id', ondelete='CASCADE'), nullable=False)
     #serv_adicional = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
     def serialize(self):
         return {
             "id": self.id,
+            "tipo_servicio": self.tipo_servicio,
+            "num_habitaciones": self.num_habitaciones,
+            "num_banios": self.num_banios,
+            "fecha_parareserva": self.fecha_parareserva,
             "fecha_pedido": self.fecha_pedido,
+            "valor": self.valor,
             "users_id": self.users_id,
             "trab_id": self.trab_id,
             "servicio_id": self.servicio_id,
-            "serv_adicional": self.serv_adicional,
-            "valor": self.valor,
             "id_comuna": self.id_comuna,
         }
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self):
+        db.session.commit()
 
 class DocumentoTrabajador (db.Model):
     __tablename__ = 'documentos'
