@@ -19,9 +19,10 @@ gunicorn = "*"
 mysqlclient = "*"
 flask-admin = "*"
 flask-script = "*"
+flask-mail = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9.1"
 
 [scripts]
 start="flask run -p 4000 -h 0.0.0.0"

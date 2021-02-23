@@ -152,7 +152,10 @@ class Pedido(db.Model):
     users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
     trab_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
     servicio_id = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=True)
-    id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=True)
+    #id_comuna = db.Column(db.Integer, db.ForeignKey('comunas.id', ondelete='CASCADE'), nullable=True)
+    ciudad = db.Column(db.String(180), nullable=False, default="")
+    comuna = db.Column(db.String(180), nullable=False, default="")
+    address = db.Column(db.String(180), nullable=False, default="")
     #vivienda_id = db.Column(db.Integer, db.ForeignKey('tipoviviendas.id', ondelete='CASCADE'), nullable=False)
     #serv_adicional = db.Column(db.Integer, db.ForeignKey('servicios.id', ondelete='CASCADE'), nullable=False)
     def serialize(self):
@@ -167,7 +170,10 @@ class Pedido(db.Model):
             "users_id": self.users_id,
             "trab_id": self.trab_id,
             "servicio_id": self.servicio_id,
-            "id_comuna": self.id_comuna,
+            "ciudad": self.ciudad,
+            "comuna": self.comuna,
+            "address": self.address
+
         }
     def save(self):
         db.session.add(self)
@@ -200,13 +206,12 @@ class Comuna(db.Model):
     __tablename__ = 'comunas'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(30), unique=False, nullable=False)
-    pedidos = db.relationship('Pedido', backref='comuna')
+    #pedidos = db.relationship('Pedido', backref='comuna')
 
     def serialize(self):
         return {
             "id": self.id,
             "nombre": self.nombre,
-            "pedidos": self.pedidos
         }
         
 
