@@ -24,7 +24,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final_2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -256,7 +256,7 @@ def create_reserva():
     pedido.save() 
     
     print(request.get_json())
-    return jsonify({"result": request.get_json()}), 201
+    return jsonify({"result": pedido.serialize() }), 201
     #print(request.get_json())
     #return jsonify({"result": request.get_json()}), 201
 
