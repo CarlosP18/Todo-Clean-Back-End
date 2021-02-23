@@ -255,10 +255,12 @@ def create_reserva():
     pedido.comuna = comuna
     pedido.save() 
     
-    print(request.get_json())
-    return jsonify({"result": request.get_json()}), 201
+    
+    #return jsonify({"result": "reserva creada", "reserva": user.serialize()}), 201
     #print(request.get_json())
     #return jsonify({"result": request.get_json()}), 201
+    #print(request.get_json())
+    return jsonify({"result": request.get_json()}), 201
 
 
     
