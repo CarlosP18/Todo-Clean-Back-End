@@ -24,7 +24,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final_2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -232,12 +232,16 @@ def formulario_cliente(id=None):
     return jsonify({"status": 200, "result": "User actualizado", "user": user.serialize()}), 200
 
 @app.route('/user/reserva', methods=['POST'])
-def create_reserva():
+def create_reserva():    
     tipo_servicio = request.json.get('tipo_servicio')
     num_habitaciones = request.json.get('num_habitaciones')
     num_banios = request.json.get('num_banios')
     fecha_parareserva = request.json.get('fecha_parareserva')
     valor = request.json.get('valor')
+    users_id = request.json.get('users_id')
+    ciudad = request.json.get('ciudad')
+    address = request.json.get('address')
+    comuna = request.json.get('comuna')
 
     pedido = Pedido()
     pedido.tipo_servicio = tipo_servicio
@@ -245,9 +249,17 @@ def create_reserva():
     pedido.num_banios = num_banios
     pedido.fecha_parareserva = fecha_parareserva
     pedido.valor = valor
-    pedido.save()
+    pedido.users_id = users_id
+    pedido.ciudad = ciudad
+    pedido.address = address
+    pedido.comuna = comuna
+    pedido.save() 
+    
+    print(request.get_json())
+    return jsonify({"result": request.get_json()}), 201
+    #print(request.get_json())
+    #return jsonify({"result": request.get_json()}), 201
 
-    return jsonify({"result": "Reserva creada", "reserva": pedido.serialize()}), 201
 
     
     
