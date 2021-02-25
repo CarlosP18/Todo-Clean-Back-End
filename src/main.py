@@ -10,7 +10,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Pedido
+from models import db, User, Pedido, Membresia 
 from dotenv import load_dotenv
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -257,12 +257,25 @@ def create_reserva():
     pedido.trab_id = trab_id 
     pedido.save() 
     
+
     print(request.get_json())
-    return jsonify({"result": pedido.serialize() }), 201
+    #opcion 2 return jsonify({"result": pedido.serialize() }), 201
     #print(request.get_json())
     #return jsonify({"result": request.get_json()}), 201
     #print(request.get_json())
     return jsonify({"result": request.get_json()}), 201
+
+@app.route('/user/suscripciones', methods=['POST'])
+def create_suscripcion():  
+    plan_id  = request.json.get('plan_id')
+    users_id  = request.json.get('users_id')
+
+    suscripcion = Membresia()
+    suscripcion.plan_id = plan_id
+    suscripcion.users_id = users_id
+    suscripcion.save()
+    return jsonify({"result": suscripcion.serialize() }), 201 
+
 
 
     

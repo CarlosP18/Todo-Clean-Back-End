@@ -91,7 +91,7 @@ class User(db.Model):
             "numero_cuenta": self.numero_cuenta,
             "cliente_pedidos": self.get_cliente_pedidos(),
             "trab_pedidos": self.get_trabajador_pedidos(),
-            "membresia": self.membresia
+            "membresia": self.get_membresia()
             
         } 
     def get_trabajador_pedidos(self):
@@ -99,6 +99,9 @@ class User(db.Model):
 
     def get_cliente_pedidos(self):
         return list(map(lambda pedido: pedido.serialize(), self.cliente_pedidos))
+
+    def get_membresia(self):
+        return list(map(lambda membresia: membresia.serialize(), self.membresia))
 
     def save(self):
         db.session.add(self)
@@ -143,7 +146,7 @@ class Membresia(db.Model):
     plan_id = db.Column(db.Integer, db.ForeignKey('planes.id', ondelete='CASCADE'), nullable=False)
     users_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     fecha_compra = db.Column(db.DateTime, default=db.func.current_timestamp())
-    fecha_termino = db.Column(db.DateTime)
+    fecha_termino = db.Column(db.DateTime, nullable=True)
 
     def serialize(self):
         return {
@@ -153,6 +156,9 @@ class Membresia(db.Model):
             "fecha_compra": self.fecha_compra,
             "fecha_termino": self.fecha_termino
         }
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
     
 class Pedido(db.Model):
     __tablename__ = 'pedidos'
