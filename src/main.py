@@ -25,7 +25,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['DEBUG'] = os.getenv('DEBUG')
 app.config['ENV'] = os.getenv('FLASK_ENV')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Miguel1989@localhost:3306/proyecto_final_2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:12345678@localhost:3306/proyecto_final'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER')
 app.config['JWT_SECRET_KEY'] = 'super-secret'
@@ -74,7 +74,7 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/clientes', methods=['GET'])
-
+@jwt_required()
 def vista_usersall():
     users = User.query.all()
     users = list(map(lambda user: user.trabajador_serialize(), users))
@@ -261,6 +261,7 @@ def create_reserva():
     ciudad = request.json.get('ciudad')
     address = request.json.get('address')
     comuna = request.json.get('comuna')
+    trab_id = request.json.get ('trab_id')
 
     pedido = Pedido()
     pedido.tipo_servicio = tipo_servicio
@@ -272,12 +273,15 @@ def create_reserva():
     pedido.ciudad = ciudad
     pedido.address = address
     pedido.comuna = comuna
+    pedido.trab_id = trab_id 
     pedido.save() 
     
     print(request.get_json())
     return jsonify({"result": pedido.serialize() }), 201
     #print(request.get_json())
     #return jsonify({"result": request.get_json()}), 201
+    #print(request.get_json())
+    return jsonify({"result": request.get_json()}), 201
 
 
     
