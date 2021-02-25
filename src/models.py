@@ -59,7 +59,15 @@ class User(db.Model):
         except:
             return None
         return User.query.get(user_id)
-
+    
+    def trabajador_serialize(self):
+        return {
+            "id": self.id,
+            "rol_id" : self.rol_id,
+            "comuna" : self.comuna,
+            "name": self.name,
+            "last_name": self.last_name
+        }
 
 
     def serialize(self):
