@@ -55,10 +55,10 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/clientes', methods=['GET'])
-@jwt_required()
+#@jwt_required()
 def vista_usersall():
     users = User.query.all()
-    users = list(map(lambda user: user.serialize(), users))
+    users = list(map(lambda user: user.trabajador_serialize(), users))
     return jsonify(users),200
 
 @app.route('/cliente/<email>', methods=['GET'])
@@ -242,6 +242,7 @@ def create_reserva():
     ciudad = request.json.get('ciudad')
     address = request.json.get('address')
     comuna = request.json.get('comuna')
+    trab_id = request.json.get ('trab_id')
 
     pedido = Pedido()
     pedido.tipo_servicio = tipo_servicio
@@ -253,10 +254,11 @@ def create_reserva():
     pedido.ciudad = ciudad
     pedido.address = address
     pedido.comuna = comuna
+    pedido.trab_id = trab_id 
     pedido.save() 
     
-    
-    #return jsonify({"result": "reserva creada", "reserva": user.serialize()}), 201
+    print(request.get_json())
+    return jsonify({"result": pedido.serialize() }), 201
     #print(request.get_json())
     #return jsonify({"result": request.get_json()}), 201
     #print(request.get_json())

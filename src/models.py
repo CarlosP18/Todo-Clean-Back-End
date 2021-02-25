@@ -34,7 +34,7 @@ class User(db.Model):
     address = db.Column(db.String(180), nullable=False, default="")
     phone = db.Column(db.String(15), unique=True, nullable=True)
     birth_date = db.Column(db.DateTime, nullable=True)
-    gender = db.Column(db.String(10), nullable=False, default="")
+    
     password = db.Column(db.String(1000), nullable=False)
     is_active = db.Column(db.Boolean, nullable=True, default=False)
     fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())  
@@ -47,7 +47,7 @@ class User(db.Model):
     documentos = db.relationship('DocumentoTrabajador', backref='user', cascade="all,delete")
     #def __repr__(self):
     #    return '<User %r>' % self.username
-    def get_reset_token(self, expires_sec=1800):
+    def get_reset_token(self, expires_sec=30):
         s = Serializer(os.getenv('SECRET_KEY'), expires_sec)
         return s.dumps({'user_id': self.id}).decode('utf-8')
     
@@ -59,7 +59,15 @@ class User(db.Model):
         except:
             return None
         return User.query.get(user_id)
-
+    
+    def trabajador_serialize(self):
+        return {
+            "id": self.id,
+            "rol_id" : self.rol_id,
+            "comuna" : self.comuna,
+            "name": self.name,
+            "last_name": self.last_name
+        }
 
 
     def serialize(self):
@@ -75,17 +83,23 @@ class User(db.Model):
             "address": self.address,
             "phone" : self.phone,
             "birth_date" : self.birth_date,
-            "gender" : self.gender,
+            
             "is_active" : self.is_active,
             "fecha_registro": self.fecha_registro,
             "bank": self.bank,
             "cuenta": self.cuenta,
             "numero_cuenta": self.numero_cuenta,
-            "cliente_pedidos": self.cliente_pedidos,
-            "trab_pedidos": self.trab_pedidos,
-            "membresia": self.membresia,
-            "documentos": self.documentos
-        }      
+            "cliente_pedidos": self.get_cliente_pedidos(),
+            "trab_pedidos": self.get_trabajador_pedidos(),
+            "membresia": self.membresia
+            
+        } 
+    def get_trabajador_pedidos(self):
+        return list(map(lambda pedido: pedido.serialize(), self.trab_pedidos))
+
+    def get_cliente_pedidos(self):
+        return list(map(lambda pedido: pedido.serialize(), self.cliente_pedidos))
+
     def save(self):
         db.session.add(self)
         db.session.commit()
