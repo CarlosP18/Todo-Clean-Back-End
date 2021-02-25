@@ -47,7 +47,7 @@ class User(db.Model):
     documentos = db.relationship('DocumentoTrabajador', backref='user', cascade="all,delete")
     #def __repr__(self):
     #    return '<User %r>' % self.username
-    def get_reset_token(self, expires_sec=30):
+    def get_reset_token(self, expires_sec=1800):
         s = Serializer(os.getenv('SECRET_KEY'), expires_sec)
         return s.dumps({'user_id': self.id}).decode('utf-8')
     
@@ -93,7 +93,15 @@ class User(db.Model):
             "trab_pedidos": self.get_trabajador_pedidos(),
             "membresia": self.membresia
             
+        }
+    def trabajador_serialize(self):
+        return {
+            "id": self.id,
+            "rol_id" : self.rol_id,
+            "comuna" : self.comuna,
+            "name" : self.name
         } 
+
     def get_trabajador_pedidos(self):
         return list(map(lambda pedido: pedido.serialize(), self.trab_pedidos))
 
