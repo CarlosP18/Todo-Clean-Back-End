@@ -5,6 +5,7 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, request, jsonify, url_for, redirect, render_template, flash
 from flask_migrate import Migrate
+from itsdangerous import URLSafeTimedSerializer
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -35,6 +36,7 @@ app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_DEBUG'] = True
+app.config['SECURITY_PASSWORD_SALT'] = 'luis'
 MIGRATE = Migrate(app, db)
 db.init_app(app)
 jwt = JWTManager(app)
@@ -42,7 +44,24 @@ CORS(app)
 setup_admin(app)
 mail = Mail(app)
 
-s = URLSafeTimedSerializer('secret-key')
+#s = URLSafeTimedSerializer('secret-key')
+
+def generate_confirmation_token(email):
+    serializer = URLSafeTimedSerializer(app.config['JWT_SECRET_KEY'])
+    return serializer.dumps(email, salt=app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_token(token, expiration=86400):
+    serializer = URLSafeTimedSerializer(config.key)
+    try:
+        email = serializer.loads(
+            token,
+            salt=config.salt,
+            max_age=expiration
+        )
+    except:
+        return False
+    return email
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -55,10 +74,10 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/clientes', methods=['GET'])
-@jwt_required()
+
 def vista_usersall():
     users = User.query.all()
-    users = list(map(lambda user: user.serialize(), users))
+    users = list(map(lambda user: user.trabajador_serialize(), users))
     return jsonify(users),200
 
 @app.route('/cliente/<email>', methods=['GET'])
@@ -269,20 +288,20 @@ def create_reserva():
 @app.route('/reset-password-request', methods=['POST'])
 def reset_request():
     
-    email = request.json.get('email')
+    email = request.json.get('correo')
     if not email:
         return jsonify({"msg":"Email inválido"})
     user = User.query.filter_by(email=email).first()
-    token = user.get_reset_token()
+    token = generate_confirmation_token(user.id)
     url = 'http://localhost:3000/reset-password/' + token
     msg = Message('Recuperación de contraseña', sender='mimarchtt@gmail.com', recipients=[email])
     msg.body = f'''Para restablecer su contraseña, haga click en el link a continuación:
 {url}
-Si usted no hizo esta solicitud, ignore este mensaje 
+Si usted no hizo esta solicitud, ignore este mensaje. 
 '''
     mail.send(msg)
-    flash('Un correo con instrucciones sobre cómo recuperar su contraseña ha sido enviado', 'info')
-    return redirect(url_for('login_user'))
+    
+    return jsonify({'msg' : 'Correo enviado'})
 
 
 
